@@ -13,7 +13,8 @@
         "PYTHON_SETUPTOOLS_VERSION": "58.1.0",
         "PYTHON_GET_PIP_URL": "https://github.com/pypa/get-pip/raw/5eaac1050023df1f5c98b173b248c260023f2278/public/get-pip.py",
         "PYTHON_GET_PIP_SHA256": "5aefe6ade911d997af080b315ebcb7f882212d070465df544e1175ac2be519b4",
-        "FLYWHEEL": "/flywheel/v0"
+        "FLYWHEEL": "/flywheel/v0",
+        "PYTHONPATH": "/flywheel/v0/QuANTs/python/quants/quants"
     },
     "custom": {
         "gear-builder": {

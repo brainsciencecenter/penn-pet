@@ -1,3 +1,11 @@
-#!/bin/bash -x
+#!/bin/bash -x 
 
-ls /flywheel/v0
+FlywheelDir=/flywheel/v0
+InputDir=${FlywheelDir}/input
+OutputDir=${FlywheelDir}/output
+Template=$InputDir/Template/template_description.json
+NetworkDir=$FlywheelDir/atlases
+
+[ -d "$OutputDir" ] || mkdir "$OutputDir"
+
+bash -x run_pet_quants.sh -o "$OutputDir" -N $NetworkDir -t $Template ${InputDir}/T1/ses-20221010x1656/sub-119517_ses-20221010x1656_BrainSegmentation0N4.nii.gz ${InputDir}/pet/sub-119517_ses-20221010x1514_trc-PI2620_rec-adyn_pet.nii.gz

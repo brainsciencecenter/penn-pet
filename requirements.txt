@@ -1,1 +1,6 @@
 flywheel-gear-toolkit
+
+itk
+SimpleITK
+pandas
+

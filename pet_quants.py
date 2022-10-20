@@ -30,24 +30,30 @@ import sys
 import json
 import glob
 
-petFile = sys.argv[1]
+import argparse
+
+CmdName = os.path.basename(sys.argv[0])
+Outputs = []
+
+ap = argparse.ArgumentParser()
+
+ap.add_argument('-t', '--template', default="/project/ftdc_misc/pcook/quants/tpl-TustisonAging2019ANTs/template_description.json",  action='store', help='template json file')
+ap.add_argument('-d', '--debug', default=False,  action='store_true', help='debug')
+ap.add_argument('-N', '--network-dir', default="/project/ftdc_pipeline/data/pet/scripts/penn-pet/atlases",  action='store', help='network directory')
+ap.add_argument('-o', '--output-dir', default=None,  action='store', help='output directory')
+ap.add_argument('-v', '--verbose', default=False,  action='store_true', help='verbose')
+
+ap.add_argument('petFile', nargs=1, type=str, default=None, help='PET File Path')
+ap.add_argument('antsDir', nargs=1, type=str, default=None, help='ANTsCT Dir Path')
+
+args = ap.parse_args()
+
 # This is the single session PET output directory.
-petDir = os.path.dirname(petFile)
-# ANTsCT output directory. Does this take the place of networkDir?
-antsDir = sys.argv[2]
+petDir = os.path.dirname(args.petFile[0])
+# ANTsCT output directory. 
+
 # Why needed? Supply correct path.
 # On scisub: /project/ftdc_misc/pcook/quants/tpl-TustisonAging2019ANTs/template_description.json
-template = "/template/template_description.json"
-
-if not os.path.exists(template):
-    template = "/project/ftdc_misc/pcook/quants/tpl-TustisonAging2019ANTs/template_description.json"
-    
-
-# Wherever jsons for different label atlases are stored.
-networkDir = "/atlases"
-if not os.path.exists(networkDir):
-    networkDir = "/project/ftdc_pipeline/data/pet/scripts/penn-pet/atlases"
-
 
 # Get subject and session based on session output directory path.
 def parsePath(path):
@@ -86,15 +92,15 @@ def getInputs(petFile,antsDir):
 q = quantsifier.Quantsifier()
 
 # Feed the template to the quantsifier.
-templateDir = os.path.dirname(os.path.abspath(template))
-templateF = open(template)
+templateDir = os.path.dirname(os.path.abspath(args.template))
+templateF = open(args.template)
 templateDef = json.load(templateF)
 templateF.close()
 q.SetTemplate(templateDef, templateDir)
 
 # Read in input files. Have to create a custom function that will replace getFTDCInputs
 # and read in both PET and ANTsCT files needed.
-inputFiles =  getInputs(petFile, antsDir)
+inputFiles =  getInputs(args.petFile[0], args.antsDir[0])
 print("input files: ", inputFiles)
 inputImgs = {}
 for tag in inputFiles.keys():
@@ -150,7 +156,7 @@ q.AddMeasure(inputImgs['suvr'], 'suvr', [2,4])
 # just the ones we want. Include Tian subcortical labels; may not need all Schaefer
 # resolutions.
 # Add networks with labels in NATIVE space (ie no template labels exist)
-networks = quantsifier.getNetworks(networkDir)
+networks = quantsifier.getNetworks(args.network_dir)
 for n in networks:
     print("Adding network ", n['Identifier'], " in ", n['TemplateSpace'], " space...")
     templateSpace = n['TemplateSpace']
@@ -161,7 +167,7 @@ for n in networks:
     # they haven't been generated for a session.
     if templateSpace=='NATIVE':
         print("Looking for NATIVE labels matching: "+n['Filename'])
-        nativeLabelName = glob.glob( os.path.join(antsDir, n['Filename']))
+        nativeLabelName = glob.glob( os.path.join(args.antsDir[0], n['Filename']))
         print(nativeLabelName)
         if len(nativeLabelName)==1:
             img = sitk.ReadImage(nativeLabelName[0])
@@ -173,7 +179,7 @@ for n in networks:
                 print("WARNING: Could not find a unique file for NATIVE labels")
     else:
         if 'Filename' in n:
-            fname = os.path.join(networkDir, n['Filename'])
+            fname = os.path.join(args.network_dir, n['Filename'])
             if os.path.exists(fname):
                 print("Adding Network: "+ n["Identifier"])
                 img = sitk.ReadImage(fname)
@@ -182,7 +188,7 @@ for n in networks:
 # Add subject and session labels.
 bidsInfo = parsePath(petDir)
 q.SetConstants({"id": bidsInfo[0], "date": bidsInfo[1]})
-q.SetOutputDirectory(petDir)
+q.SetOutputDirectory(args.output_dir)
 # Get tracer from SUVR image name.
 print(inputFiles['suvr'][0])
 trc = os.path.basename(inputFiles['suvr'][0]).split("_")[2]

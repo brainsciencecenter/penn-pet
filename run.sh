@@ -17,4 +17,5 @@ docker run --rm -it --entrypoint='bash'\
 	-v /home/holder/Work/PennPet/penn-pet/manifest.json:/flywheel/v0/manifest.json\
 	-v /home/holder/Work/PennPet/data/T1:/flywheel/v0/input/T1\
 	-v /home/holder/Work/PennPet/data/pet:/flywheel/v0/input/pet\
+	-v /home/holder/Work/PennPet/data/TemplateDir:/flywheel/v0/input/Template\
 	$IMAGE
